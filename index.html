@@ -15,13 +15,23 @@
     body { background:var(--cream); color:var(--green); font-family:"Jost",sans-serif; overflow-x:hidden; }
     section { width:100%; }
 
-    .reveal { opacity:0; transform:translateY(42px); transition:opacity 1.1s cubic-bezier(.22,1,.36,1), transform 1.1s cubic-bezier(.22,1,.36,1); }
+    .reveal { opacity:0; transform:translateY(42px); transition:opacity 1.15s cubic-bezier(.22,1,.36,1), transform 1.15s cubic-bezier(.22,1,.36,1); will-change:opacity,transform; }
     .reveal.visible { opacity:1; transform:translateY(0); }
 
-    .hero, .intro, .countdown-section, .details, .rsvp, .footer, .photo {
-      min-height:100svh;
-      height:100vh;
+    .hero { min-height:100svh; height:100vh; }
+
+    .intro, .countdown-section, .details, .rsvp, .footer {
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
     }
+
+    .intro { min-height:62vh; height:auto; }
+    .countdown-section { min-height:52vh; height:auto; }
+    .details { min-height:66vh; height:auto; }
+    .rsvp { min-height:64vh; height:auto; }
+    .footer { min-height:38vh; height:auto; }
     .hero { position:relative; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; isolation:isolate; color:var(--white); text-align:center; }
     .intro, .countdown-section, .details, .rsvp, .footer {
       display:flex; flex-direction:column; justify-content:center; align-items:center;
@@ -43,11 +53,86 @@
     .number { display:block; font-family:"Cormorant Garamond",serif; font-size:clamp(45px,7vw,80px); font-style:italic; line-height:1; }
     .unit { font-size:10px; letter-spacing:3px; text-transform:uppercase; opacity:.6; }
 
-    /* Keep each photo section the same height as the hero, with the full image visible behind the caption. */
-    .photo { position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; isolation:isolate; background:var(--cream); color:var(--white); text-align:center; }
-    .photo::after { content:""; position:absolute; inset:0; z-index:1; background:linear-gradient(to bottom,rgba(20,35,25,.08) 20%,rgba(20,35,25,.32) 100%); pointer-events:none; }
-    .photo-text { position:relative; z-index:2; width:100%; padding:20px; transform:translateY(-8%); font-family:"Cormorant Garamond",serif; font-size:clamp(38px,6vw,75px); font-style:italic; line-height:1; text-shadow:0 2px 18px rgba(0,0,0,.28); }
-    .photo-image { position:absolute; z-index:0; inset:0; display:block; width:100%; height:100%; object-fit:contain; object-position:center; }
+    /* Editorial photo sections: different heights + intentional caption alignment */
+    .photo {
+      position:relative;
+      overflow:hidden;
+      isolation:isolate;
+      color:var(--white);
+      min-height:620px;
+      height:78vh;
+      display:flex;
+      align-items:flex-end;
+    }
+
+    .photo-tall { height:88vh; }
+    .photo-medium { height:70vh; }
+    .photo-short { height:62vh; min-height:500px; }
+
+    .photo-image {
+      position:absolute;
+      inset:0;
+      z-index:-2;
+      display:block;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:var(--position, center);
+      transform:scale(1.025);
+      transition:transform 1.8s cubic-bezier(.22,1,.36,1);
+      will-change:transform;
+    }
+
+    .photo.visible .photo-image { transform:scale(1); }
+    .photo:hover .photo-image { transform:scale(1.035); }
+
+    .photo::after {
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:-1;
+      background:linear-gradient(
+        to top,
+        rgba(18,28,20,.78) 0%,
+        rgba(18,28,20,.30) 40%,
+        rgba(18,28,20,.03) 78%
+      );
+      pointer-events:none;
+    }
+
+    .photo-text {
+      position:relative;
+      z-index:2;
+      width:min(1100px,100%);
+      padding:clamp(55px,8vh,100px) clamp(24px,6vw,80px);
+      font-family:"Cormorant Garamond",serif;
+      font-size:clamp(40px,6vw,78px);
+      font-style:italic;
+      line-height:.96;
+      text-shadow:0 2px 22px rgba(0,0,0,.25);
+      opacity:0;
+      transform:translateY(24px);
+      transition:opacity 1.2s cubic-bezier(.22,1,.36,1),
+                 transform 1.2s cubic-bezier(.22,1,.36,1);
+    }
+
+    .photo.visible .photo-text {
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    .photo-1 { --position:center center; justify-content:center; }
+    .photo-1 .photo-text { text-align:center; }
+
+    .photo-2 { --position:center 45%; justify-content:flex-start; }
+    .photo-2 .photo-text { text-align:left; max-width:900px; }
+
+    .photo-3 { --position:center center; justify-content:flex-end; }
+    .photo-3 .photo-text {
+      text-align:right;
+      max-width:1050px;
+      margin-left:auto;
+    }
 
     .details { background:var(--sand); padding:125px 25px; text-align:center; }
     .details h2, .rsvp h2 { font-family:"Cormorant Garamond",serif; font-style:italic; font-weight:400; line-height:.9; }
@@ -66,14 +151,39 @@
 
     @keyframes fadeUp { from { opacity:0; transform:translateY(35px); } to { opacity:1; transform:translateY(0); } }
     @keyframes heroZoom { from { transform:scale(1.04); } to { transform:scale(1); } }
-    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } .reveal { opacity:1; transform:none; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } .reveal, .photo-text { opacity:1; transform:none; } }
     @media (max-width:600px) {
-      .hero, .intro, .countdown-section, .details, .rsvp, .footer, .photo { min-height:100svh; height:100svh; }
-      .hero { min-height:600px; }
+      .hero { min-height:100svh; height:100svh; }
       .hero-content { padding-bottom:65px; }
       .hero-small { font-size:9px; letter-spacing:3px; }
       .hero-date { font-size:10px; letter-spacing:2px; }
-      .intro,.countdown-section,.details,.rsvp { padding-top:82px; padding-bottom:82px; }
+      .intro { min-height:58vh; padding:80px 24px; }
+      .countdown-section { min-height:46vh; padding:75px 18px; }
+      .details { min-height:58vh; padding:82px 24px; }
+      .rsvp { min-height:55vh; padding:82px 24px; }
+
+      .photo,
+      .photo-tall,
+      .photo-medium,
+      .photo-short {
+        height:auto;
+        min-height:0;
+        aspect-ratio:4 / 5;
+      }
+
+      .photo-2 { aspect-ratio:3 / 4; }
+
+      .photo-text,
+      .photo-2 .photo-text,
+      .photo-3 .photo-text {
+        width:100%;
+        max-width:none;
+        margin:0;
+        padding:45px 24px 52px;
+        font-size:clamp(40px,11vw,58px);
+        text-align:center;
+      }
+
       .countdown { gap:25px; }
       .countdown-item { min-width:55px; }
       .number { font-size:45px; }
@@ -84,12 +194,13 @@
 </head>
 <body>
   <section class="hero">
-    <img class="hero-image" src="hero-forest.jpg" alt="Tanuj and Prachi" fetchpriority="high">
+    <img class="hero-image" src="src/assets/hero-forest.jpg" alt="Tanuj and Prachi" fetchpriority="high">
     <div class="hero-content">
       <div class="hero-small">Together with our families</div>
       <h1>Tanuj<br>&amp;<br>Prachi</h1>
       <div class="hero-date">11 December 2026 · Sonipat</div>
     </div>
+    <span class="scroll-cue" aria-hidden="true"></span>
   </section>
 
   <section class="intro reveal">
@@ -107,9 +218,9 @@
     </div>
   </section>
 
-  <section class="photo reveal">
+  <section class="photo photo-1 photo-tall reveal reveal-slow">
     <div class="photo-text">Two hearts.<br>One beautiful journey.</div>
-    <img class="photo-image" src="embrace.jpg" alt="Tanuj and Prachi embracing" loading="lazy">
+    <img class="photo-image" src="src/assets/embrace.jpg" alt="Tanuj and Prachi embracing" loading="lazy">
   </section>
 
   <section class="details reveal">
@@ -123,14 +234,14 @@
     </div>
   </section>
 
-  <section class="photo reveal">
+  <section class="photo photo-2 photo-medium reveal reveal-slow">
     <div class="photo-text">Come celebrate<br>with us.</div>
-    <img class="photo-image" src="beach-dance.jpg" alt="Tanuj and Prachi dancing" loading="lazy">
+    <img class="photo-image" src="src/assets/beach-dance.jpg" alt="Tanuj and Prachi dancing" loading="lazy">
   </section>
 
-  <section class="photo reveal">
+  <section class="photo photo-3 photo-short reveal reveal-slow">
     <div class="photo-text">Forever<br>starts here.</div>
-    <img class="photo-image" src="beach-walk.jpg" alt="Tanuj and Prachi walking together" loading="lazy">
+    <img class="photo-image" src="src/assets/beach-walk.jpg" alt="Tanuj and Prachi walking together" loading="lazy">
   </section>
 
   <section class="rsvp reveal">
